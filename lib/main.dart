@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:login_firebaseapp/dashboard.dart';
 import 'package:login_firebaseapp/registration.dart';
 import 'package:login_firebaseapp/services/authenticatio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   runApp(
-    MaterialApp(home: LoginScreen()),
+    MaterialApp(
+        initialRoute: '/login',
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/register': (context) => RegistrationScreen(),
+        '/dashboard': (context) => DashBoardScreen(),
+      },
+    ),
   );
 }
 
@@ -25,14 +33,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _key = GlobalKey<FormState>();
 
+  final AuthenticationService _auth = AuthenticationService();
   TextEditingController _emailContoller = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: Container(
-        color: Colors.deepPurpleAccent,
+        color: Colors.deepPurple,
         child: Center(
           child: Form(
             key: _key,
@@ -121,10 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Color.fromARGB(255, 14, 14, 14)
                                         .withAlpha(55)),
                               ),
-                              onPressed: (){
-                                if(_key.currentState!.validate())
-                                {
-
+                              onPressed: () {
+                                if (_key.currentState!.validate()) {
+                                  signinUser();
                                 }
                               },
                               child: Text(
@@ -145,11 +152,16 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
 
-// void signInUser() async{
-//   dynamic authResult = await _auth.loginUser
-//   if (authResult == null) {
-//       print('Sign in error. could not be able to login');
-//     }
-// }
+  void signinUser() async {
+    dynamic result =
+        await _auth.signInUser(_emailContoller.text, _passwordController.text);
+    if (result == null) {
+      print("sign in failed.");
+    } else {
+      _emailContoller.clear();
+      _passwordController.clear();
+      Navigator.pushNamed(context, '/dashboard');
+    }
+  }
+}
