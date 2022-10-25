@@ -15,6 +15,14 @@ class DatabaseManager {
         .set({'name': name, 'gender': gender, 'score': score});
   }
 
+  //update data
+
+  Future updateData(String name, String gender, int score, String uid) async {
+    return await profileList.doc(uid).update({
+       'name': name, 'gender': gender, 'score': score
+    });
+  }
+
   Future getUserData() async {
     List itemList = [];
     try {

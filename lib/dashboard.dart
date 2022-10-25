@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -20,12 +22,18 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
   TextEditingController _scoreController = TextEditingController();
 
   List userProfileList = [];
+  String userId = "";
 
   @override
   void initState() {
     super.initState();
+    fetchUserId();
     fetchDatabaseList();
-    
+  }
+
+  fetchUserId() async {
+    final User? getUserId = FirebaseAuth.instance.currentUser;
+    userId = getUserId!.uid;
   }
 
   fetchDatabaseList() async {
@@ -37,6 +45,11 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         userProfileList = resultant;
       });
     }
+  }
+
+  updateData(String name, String gender, int score, String uid) async {
+    await DatabaseManager().updateData(name, gender, score, uid);
+    fetchDatabaseList();
   }
 
   @override
@@ -117,7 +130,13 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               ),
             ),
             actions: [
-              ElevatedButton(onPressed: () {}, child: Text('Submit')),
+              ElevatedButton(
+                  onPressed: () {
+                    submit(context);
+                    Navigator.of(context).pop(context);
+                    print(userId);
+                  },
+                  child: Text('Submit')),
               ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop(context);
@@ -126,5 +145,13 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             ],
           );
         });
+  }
+
+  submit(BuildContext context) {
+    updateData(_nameController.text, _genderController.text,
+        int.parse(_scoreController.text), userId);
+    _genderController.clear();
+    _nameController.clear();
+    _scoreController.clear();
   }
 }
